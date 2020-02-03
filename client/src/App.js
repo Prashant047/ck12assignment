@@ -1,5 +1,6 @@
 import React from 'react';
 import * as axios from 'axios';
+import safeEval from "safe-eval";
 import MonacoEditor from 'react-monaco-editor';
 import {connect} from 'react-redux';
 
@@ -26,15 +27,7 @@ class App extends React.Component {
 		this.onKeyPressHandler = this.onKeyPressHandler.bind(this);
 	}
 
-	// componentDidMount(){
-	// 	console.log(this.props.chat);
-	// 	console.log(this.props.tabs);
-	// }
 	componentDidMount(){
-		// function noScroll(){
-		// 	window.scrollTo(0,0);
-		// }
-		// window.addEventListener('scroll', noScroll);
 		window.addEventListener('resize', () => {
 			this.setState({editorWidth: window.innerWidth/2});
 		});
@@ -47,7 +40,6 @@ class App extends React.Component {
 	}
 
 	onChange(newValue, e){
-		// console.log('onChange', newValue, e);
 		this.props.updateCode(newValue);
 		this.editor.focus();
 	}
@@ -76,7 +68,7 @@ class App extends React.Component {
 	onKeyPressHandler(event){
 		if(event.key === 'Enter'){
 			if(this.state.messageText.length !== 0){
-				this.props.sendMessage(this.state.messageText);
+				this.props.sendMessage(this.state.messageText, this.props.code['main']);
 				this.setState({messageText: ""})
 			}
 		}
@@ -140,6 +132,31 @@ class App extends React.Component {
 	}
 }
 
+
+const CampK12 = {
+	translate(text, fromLang, toLang){
+		return new Promise((resolve, reject) => {
+			axios.post("https://translate.yandex.net/api/v1.5/tr.json/translate" ,null, {params : {
+				lang:`${fromLang}-${toLang}`,
+				key: "trnsl.1.1.20200131T134450Z.40bdceadd6b715c0.6451fead3a42dc87e73bca2d45ed7a1bc15142dd",
+				text:text
+			}})
+				.then((response) => {
+					resolve(response.data.text[0]);
+				})
+				.catch((error) => {
+					reject(error);
+				});
+		})
+	}
+};
+
+const context = {
+	reverseIt: function (str) {
+		return str.split("").reverse().join("");
+	},
+	CampK12: CampK12
+};
 const mapStateToProps = (state) => {
 	return {
 		chat: state.chat,
@@ -148,7 +165,7 @@ const mapStateToProps = (state) => {
 		code: state.code,
 		applyChange: state.applyChange,
 		applyBtnText: state.applyBtnText
-	}
+	};
 }
 
 const mapDispatchToProps = (dispatch) => {
@@ -169,41 +186,50 @@ const mapDispatchToProps = (dispatch) => {
 				type: 'ADD_NEW_TAB'
 			});
 		},
-		sendMessage: (message) => {
-			// dispatch({
-			// 	type: 'SEND_MESSAGE',
-			// 	payload: message
-			// });
+		sendMessage: (message, main_code) => {
 
 			dispatch((dispatcher) => {
+
 				dispatcher({
-					type: 'SEND_MESSAGE',
-					payload: {mtag:'CLIENT', message: message}
+					type: "SEND_MESSAGE",
+					payload: {mtag: "CLIENT",message:message}
 				});
 
 				dispatcher({
-					type: 'SEND_MESSAGE',
-					payload: {mtag:'WAITING'}
-
+					type: "SEND_MESSAGE",
+					payload: {mtag: "WAITING"}
 				});
 
-				axios.post('/message',{message})
-					.then((response) => {
-						// console.log(response);
-						const {reply} = response.data;
-						
-						// console.log(reply);
+
+				let code = main_code;
+				code = '(' + code + `)("${message}")`;
+
+				try {
+					let output = safeEval(code, context);
+
+					output.then(reply => {
 						dispatcher({
-							type: 'SEND_MESSAGE',
-							payload: {mtag: 'SERVER', message: reply}
+							type: "SEND_MESSAGE",
+							payload: { mtag: "SERVER", message: reply }
 						});
-					})
-					.catch((error) => {
-						console.log("error sending message", error);
+
+					}).catch(err => {
+						
+						dispatcher({
+							type: "SEND_MESSAGE",
+							payload: { mtag: "SERVER", message: "Error executing the code" }
+						});
 					});
+
+				} catch (except) {
+					dispatcher({
+						type: "SEND_MESSAGE",
+						payload: { mtag: "SERVER", message: "Error executing the code" }
+					});
+				}
 			});
 		},
-		sendCode: (code) => {
+		sendCode: (main_code) => {
 			dispatch((dispatcher) => {
 				dispatcher({
 					type: 'APPLY_CAHNGE'
@@ -213,22 +239,34 @@ const mapDispatchToProps = (dispatch) => {
 					type: 'CHANGE_APPLY_BTN_TEXT',
 					payload: 'Applying'
 				});
+				
+				try{
 
-				axios.post('/code', {code})
-					.then((response) => {
-						if(response.data.received){
-							dispatcher({
-								type: 'CHANGE_APPLIED'
-							});
-							dispatcher({
-								type: 'CHANGE_APPLY_BTN_TEXT',
-								payload: 'Change Applied'
-							});
-						}
-					})
-					.catch((error) => {
-						console.log("error sending code" ,error)
+					let code = main_code;
+					code = '(' + code + `)("Test")`;
+
+					safeEval(code, context);
+					dispatcher({
+						type: 'CHANGE_APPLIED'
 					});
+
+					dispatcher({
+						type: 'CHANGE_APPLY_BTN_TEXT',
+						payload: 'Change Applied'
+					});
+
+
+
+				}catch(except){
+					dispatcher({
+						type: 'CHANGE_APPLIED'
+					});
+					dispatcher({
+						type: 'CHANGE_APPLY_BTN_TEXT',
+						payload: 'Error'
+					});
+					
+				}
 			})
 		}
 	};
