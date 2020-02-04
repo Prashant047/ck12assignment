@@ -12,12 +12,12 @@ class App extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
-			messageText: '',
-			editorWidth: window.innerWidth/2
+			messageText: ''
 		};
 		this.editor = null;
 
 		this.chatBox = React.createRef();
+		this.editorSection = React.createRef();
 		
 		this.editorDidMount = this.editorDidMount.bind(this);
 		this.onChange = this.onChange.bind(this);
@@ -27,12 +27,6 @@ class App extends React.Component {
 		this.onKeyPressHandler = this.onKeyPressHandler.bind(this);
 	}
 
-	componentDidMount(){
-		window.addEventListener('resize', () => {
-			this.setState({editorWidth: window.innerWidth/2});
-		});
-	}
-	
 	editorDidMount(editor, monaco){
 		console.log('editor mounted');
 		this.editor = editor;
@@ -84,7 +78,8 @@ class App extends React.Component {
 
 	render(){
 		const editorOptions = {
-			selectOnLineNumbers: true
+			selectOnLineNumbers: true,
+			automaticLayout: true
 		};
 
 		return (
@@ -92,41 +87,48 @@ class App extends React.Component {
 				<div class="top-bar">
 					<span class="title-text">AI playground</span>
 				</div>
-				<div class="work-section">
-					<div class="editor-section">
-						<div className="tab-bar">
-							{this.getTabs()}
-							<button class="new-tab-btn" onClick={this.addBtnHandler}>+</button>
-							<button class={`apply-btn ${this.props.applyChange?'green':''}`} 
-								onClick={this.applyBtnHandler}>{this.props.applyBtnText}</button>
+					<div className="row">
+
+						<div class="editor-section col-md-6 col-12" >
+							<div className="tab-bar">
+								{this.getTabs()}
+								<button class="new-tab-btn" onClick={this.addBtnHandler}>+</button>
+								<button class={`apply-btn ${this.props.applyChange ? 'green' : ''}`}
+									onClick={this.applyBtnHandler}>{this.props.applyBtnText}</button>
+							</div>
+							<div className="editor-box" ref={this.editorSection}>
+								{/*
+									add MonacoWebpackPlugin to -->
+									root/node_modules/react_scripts/config/webpack.config.prod.js
+									before running npm start
+								*/}
+								<MonacoEditor
+									className="editor"
+									language="javascript"
+									theme="vs-dark"
+									value={this.props.code[this.props.selectedTab]}
+									options={editorOptions}
+									onChange={this.onChange}
+									editorDidMount={this.editorDidMount}
+								/>
+							</div>
 						</div>
-						<div className="editor-box">
-							<MonacoEditor
-								width={this.state.editorWidth}
-								height="681"
-								language="javascript"
-								theme="vs-dark"
-								value={this.props.code[this.props.selectedTab]}
-								options={editorOptions}
-								onChange={this.onChange}
-								editorDidMount={this.editorDidMount}
+						<div class="chat-box-section col-md-6 col-12">
+							<div className="chat-box" ref={this.chatBox}>
+								<ul className="chat-list">
+									{this.getChats()}
+								</ul>
+							</div>
+							<input
+								type="text"
+								class="input-box"
+								placeholder="Type Message here..."
+								onChange={this.onMessageChangeHandler}
+								onKeyPress={this.onKeyPressHandler}
+								value={this.state.messageText}
 							/>
 						</div>
 					</div>
-					<div class="chat-box-section">
-						<div className="chat-box" ref={this.chatBox}>
-							{this.getChats()}
-						</div>
-						<input 
-							type="text" 
-							class="input-box"
-							placeholder="Type Message here..."
-							onChange={this.onMessageChangeHandler}
-							onKeyPress={this.onKeyPressHandler}
-							value={this.state.messageText}
-						/>
-					</div>
-				</div>
 			</div>
 		);
 	}

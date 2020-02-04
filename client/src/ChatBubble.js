@@ -2,15 +2,15 @@ import React from 'react';
 
 const ChatBubble = ({mtag, message}) => {
 	if(mtag === "SERVER"){
-		return <div class="chat-bubble you">{message}</div>;
+		return <li className="chat you">{message}</li>;
 	}
 
 	else if(mtag === "CLIENT"){
-		return <div class="chat-bubble me">{message}</div>;
+		return <li className="chat me">{message}</li>;
 	}
 
 	else if(mtag === "WAITING"){
-		return <div class="chat-bubble you">...</div>;
+		return <li className="chat you">...</li>;
 	}
 }
 

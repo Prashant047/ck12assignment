@@ -1,7 +1,7 @@
 body {
 	margin: 0;
 	font-family: 'Roboto', sans-serif;
-	overflow: hidden ;
+	background-color: #171717;
 }
 .wrapper {
 	width: 100%;
@@ -11,9 +11,9 @@ body {
 
 .top-bar {
 	width: 100%;
-	height: 5vh;
-	line-height: 5vh;
-	border-bottom: #404040 solid 3px;
+	height: 50px;
+	line-height: 50px;
+	border-bottom: #404040 solid 2px;
 }
 
 .title-text {
@@ -22,55 +22,62 @@ body {
 	font-stretch: normal;
 	font-style: normal;
 	line-height: normal;
-	/* letter-spacing: normal; */
 	color: #ffffff;
-	/* width: 125px; */
-	/* height: 21px; */
 	opacity: 0.8;
 	margin: auto 20px;
 }
 
 .editor-section {
-	left: 0px;
-	position: absolute;
-	width: 50%;
-	height: 95vh;
-	border-right: #404040 solid 3px;
+	height: calc(100vh - 50px);
+	border-right: #404040 solid 2px;
+}
+
+.editor-box{
+	width: 100%;
+	height: calc(100vh - 90px);
+}
+
+.editor{
+	height: inherit;
+	width: inherit;
 }
 
 .chat-box-section {
-	margin-left: 50%;
-	width: 50%;
-	height: 95vh;
-	/* margin-top: 0px; */
+	height: calc(100vh - 50px);
 }
 
 .chat-box {
-	display: block;
-	/* margin-top: 10px; */
-	margin-left: auto;
-	margin-right: auto;
+	position: absolute;
+	top: 10%;
+	left:0;
+	right:0;
+	margin: auto;
 	padding-right: 5px;
 	padding-left: 5px;
 	width: 80%;
-	height: 392px;
+	height: 55%;
 	border-radius: 4px;
 	box-shadow: 0 4px 8px 8px rgba(0, 0, 0, 0.08);
 	background-color: #1f1f1f;
 	overflow: scroll;
 }
 
-.chat-bubble {
-	width: 272px;
-	min-height: 25px;
-	border-radius: 16px;
+.chat-list{
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.chat {
+	display:inline-block;
 	background-color: #404040;
-	margin-top: 20px;
-	float: right;
-    padding: 10px 18px;
-	/* position: relative; */
-    /* display: inline-block; */
-	color: #d3d3d3;
+	clear: both;
+	padding: 10px;
+	border-radius: 30px;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	font-family: Helvetica, Arial, sans-serif;
+	color: #fff;
 }
 
 .me {
@@ -81,12 +88,14 @@ body {
 	float: left;
 }
 .input-box {
-	display: block;
+	position: absolute;
+	top: 65%;
+	left:0;
+	right:0;
+	margin: auto;
 	margin-top: 30px;
-	margin-left: auto;
-	margin-right: auto;
 	width: 80%;
-	height: 72px;
+	height: 15%;
 	border-radius: 4px;
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
 	border: 0px;
@@ -174,6 +183,7 @@ body {
 	visibility: visible;
 }
 
-
-
+.col-md-6, .col-12 {
+	padding: 0;
+}
 
